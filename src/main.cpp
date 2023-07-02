@@ -5,11 +5,12 @@
 #define CAN_BAUD_RATE 500000
 #define AVG_SAMPLES 10
 
-uint8_t brake_light = A1;
-uint8_t brake_light_brightness = 20;  // 0-255
-uint8_t brake_sensor = A14;
-uint8_t brake_sensor_ref = 200;          // 202/1023 * 3.3V = 0.65V
-uint8_t brake_sensor_read_period = 100;  // ms
+#define brake_light A1
+#define brake_light_brightness 100  // 0-255
+#define brake_sensor A17
+#define brake_sensor_ref 180         // 202/1023 * 3.3V = 0.65V
+#define brake_sensor_read_period 25  // ms
+
 uint16_t brake_val = 0;
 
 elapsedMillis brake_sensor_timer;
@@ -55,11 +56,13 @@ void canbus_setup() {
     can1.setFIFOFilter(REJECT_ALL);
     can1.setFIFOFilter(0, 0x123, STD);
     can1.onReceive(canbus_listener);
+
+    init_message();
 }
 
-void send_msg(int value_bamo) {
-    uint8_t byte1 = (value_bamo >> 8) & 0xFF;  // MSB
-    uint8_t byte2 = value_bamo & 0xFF;         // LSB
+void send_msg(uint16_t brake_value) {
+    uint8_t byte1 = (brake_value >> 8) & 0xFF;  // MSB
+    uint8_t byte2 = brake_value & 0xFF;         // LSB
 
     brake_sensor_c3.buf[1] = byte2;
     brake_sensor_c3.buf[2] = byte1;
@@ -78,7 +81,7 @@ void brake_light_control(int brake_val) {
 void setup() {
     canbus_setup();
     pinMode(brake_sensor, INPUT);
-    // pinMode(brake_light, OUTPUT);
+    pinMode(brake_light, OUTPUT);
 }
 
 void loop() {
@@ -91,7 +94,7 @@ void loop() {
         brake_val = average(avgBuffer1, AVG_SAMPLES);
         Serial.println(brake_val);
 
-        // brake_light_control(brake_val);
+        brake_light_control(brake_val);
         if (brake_val >= brake_sensor_ref) {
             Serial.println("Brake Light ON");
             send_msg(brake_val);
