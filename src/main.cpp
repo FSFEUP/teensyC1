@@ -4,6 +4,7 @@
 
 #define CAN_BAUD_RATE 500000
 
+uint8_t brake_light = A3;
 uint8_t brake_sensor = A14;
 uint8_t brake_sensor_read_period = 20;  // ms
 elapsedMillis brake_sensor_timer;
@@ -42,16 +43,27 @@ void send_msg(int value_bamo) {
     can1.write(brake_sensor_c3);
 }
 
+void brake_light_control(int brake_val)
+{
+    if(brake_val >= 650)   
+        digitalWrite(brake_light, HIGH);
+    else 
+        dgitalWrite(brake_light, LOW);
+}
+
 void setup() {
     canbus_setup();
     pinMode(brake_sensor, INPUT);
+    pinMode(brake_light, OUTPUT);
 }
 
 void loop() {
     if (brake_sensor_timer > brake_sensor_read_period) {
         brake_sensor_timer = 0;
         int brake_val = analogRead(brake_sensor);
-        Serial.println(brake_val);
+        Serial.println(brake_val);     
+        
+        brake_light_control(brake_val);
         send_msg(brake_val);
     }
 }
