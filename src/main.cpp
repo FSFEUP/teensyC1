@@ -3,17 +3,19 @@
 #include <elapsedMillis.h>
 
 #define CAN_BAUD_RATE 500000
-#define AVG_SAMPLES 10
+#define AVG_SAMPLES 20
 
 #define brake_light A1
 #define brake_light_brightness 100  // 0-255
 #define brake_sensor A17
-#define brake_sensor_ref 180         // 202/1023 * 3.3V = 0.65V
-#define brake_sensor_read_period 25  // ms
+#define brake_sensor_ref 158               // 202/1023 * 3.3V = 0.65V
+#define brake_sensor_read_period 5         // ms
+#define brake_light_min_active_period 200  // ms
 
 uint16_t brake_val = 0;
 
 elapsedMillis brake_sensor_timer;
+elapsedMillis brake_light_active_timer;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
@@ -72,8 +74,9 @@ void send_msg(uint16_t brake_value) {
 
 void brake_light_control(int brake_val) {
     if (brake_val >= brake_sensor_ref) {
+        brake_light_active_timer = 0;
         analogWrite(brake_light, brake_light_brightness);
-    } else {
+    } else if (brake_light_active_timer > brake_light_min_active_period) {
         analogWrite(brake_light, 0);
     }
 }
