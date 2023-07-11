@@ -5,12 +5,14 @@
 #define CAN_BAUD_RATE 500000
 #define AVG_SAMPLES 20
 
-#define brake_light A1
-#define brake_light_brightness 100  // 0-255
-#define brake_sensor A17
+#define brake_light 2
+#define brake_light_brightness 150  // 0-255
+#define brake_sensor A5
 #define brake_sensor_ref 165               // 202/1023 * 3.3V = 0.65V
 #define brake_sensor_read_period 5         // ms
 #define brake_light_min_active_period 200  // ms
+
+#define current_sensor A4
 
 uint16_t brake_val = 0;
 
@@ -57,6 +59,7 @@ void canbus_setup() {
     can1.enableFIFOInterrupt();
     can1.setFIFOFilter(REJECT_ALL);
     can1.setFIFOFilter(0, 0x123, STD);
+    can1.setFIFOFilter(1, 0x777, STD);
     can1.onReceive(canbus_listener);
 
     init_message();
@@ -89,6 +92,7 @@ void setup() {
 
 void loop() {
     // delay(200);
+    // analogWrite(brake_light, 0);
 
     if (brake_sensor_timer > brake_sensor_read_period) {
         brake_sensor_timer = 0;
