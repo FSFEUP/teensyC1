@@ -19,8 +19,8 @@
 #define SENSOR_SAMPLE_PERIOD 20  // ms
 
 // uncomment these lines to enable debugging
-#define DEBUG_BL
-#define DEBUG_CAN
+// #define DEBUG_BL
+// #define DEBUG_CAN
 
 uint16_t brake_val = 0;
 
@@ -89,13 +89,16 @@ void sendMsg(uint16_t brake_value) {
     can1.write(brake_sensor_c3);
 }
 
-void brakeLightControl(int brake_val) {
+bool brakeLightControl(int brake_val) {
     if (brake_val >= BRAKE_SENSOR_REF) {
         brake_light_active_timer = 0;
         analogWrite(BRAKE_LIGHT, BRAKE_LIGHT_BRIGHTNESS);
+        return true;
     } else if (brake_light_active_timer > BRAKE_LIGHT_MIN_ACTIVE_PERIOD) {
         analogWrite(BRAKE_LIGHT, 0);
+        return false;
     }
+    return false;
 }
 
 void setup() {
@@ -113,13 +116,17 @@ void loop() {
 #ifdef DEBUG_BL
         Serial.println(brake_val);
 #endif
-        brakeLightControl(brake_val);
-        if (brake_val >= BRAKE_SENSOR_REF and canTimer > CAN_TRANSMISSION_PERIOD and not R2D) {
-            canTimer = 0;
+        if (brakeLightControl(brake_val)) {
 #ifdef DEBUG_BL
             Serial.println("Brake Light ON");
 #endif
-            sendMsg(brake_val);
+            if (canTimer > CAN_TRANSMISSION_PERIOD and not R2D) {
+#ifdef DEBUG_CAN
+                Serial.println("Message sent");
+#endif
+                sendMsg(brake_val);
+                canTimer = 0;
+            }
         }
     }
 }
