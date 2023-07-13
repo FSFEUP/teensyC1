@@ -18,6 +18,10 @@
 
 #define SENSOR_SAMPLE_PERIOD 20  // ms
 
+// uncomment these lines to enable debugging
+#define DEBUG_BL
+#define DEBUG_CAN
+
 uint16_t brake_val = 0;
 
 elapsedMillis canTimer;
@@ -54,9 +58,13 @@ void initMessages() {
 }
 
 void canbusSniffer(const CAN_message_t& msg) {
+#ifdef DEBUG_CAN
     Serial.println("CAN message received");
     Serial.print("Message ID: ");
     Serial.println(msg.id, HEX);
+#endif
+    if (msg.id == 0x111)
+        R2D = !R2D;
 }
 
 void canbusSetup() {
@@ -65,7 +73,7 @@ void canbusSetup() {
     can1.enableFIFO();
     can1.enableFIFOInterrupt();
     can1.setFIFOFilter(REJECT_ALL);
-    can1.setFIFOFilter(0, 0x123, STD);
+    can1.setFIFOFilter(0, 0x111, STD);
     can1.onReceive(canbusSniffer);
 
     initMessages();
@@ -102,12 +110,15 @@ void loop() {
         brake_val = analogRead(BRAKE_SENSOR);
         bufferInsert(avgBuffer1, AVG_SAMPLES, brake_val);
         brake_val = average(avgBuffer1, AVG_SAMPLES);
+#ifdef DEBUG_BL
         Serial.println(brake_val);
-
+#endif
         brakeLightControl(brake_val);
         if (brake_val >= BRAKE_SENSOR_REF and canTimer > CAN_TRANSMISSION_PERIOD and not R2D) {
             canTimer = 0;
+#ifdef DEBUG_BL
             Serial.println("Brake Light ON");
+#endif
             sendMsg(brake_val);
         }
     }
