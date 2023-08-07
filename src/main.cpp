@@ -5,12 +5,13 @@
 #define CAN_BAUD_RATE 500000
 #define AVG_SAMPLES 20
 
-#define brake_light A1
+#define brake_light 2
 #define brake_light_brightness 100  // 0-255
-#define brake_sensor A17
+#define brake_sensor A7
 #define brake_sensor_ref 165               // 202/1023 * 3.3V = 0.65V
 #define brake_sensor_read_period 5         // ms
 #define brake_light_min_active_period 200  // ms
+#define current_sensor A6
 
 uint16_t brake_val = 0;
 
