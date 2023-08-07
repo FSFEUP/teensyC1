@@ -2,25 +2,37 @@
 #include <FlexCAN_T4.h>
 #include <elapsedMillis.h>
 
-#define CAN_BAUD_RATE 500000
 #define AVG_SAMPLES 20
 
-#define brake_light 2
-#define brake_light_brightness 100  // 0-255
-#define brake_sensor A7
-#define brake_sensor_ref 165               // 202/1023 * 3.3V = 0.65V
-#define brake_sensor_read_period 5         // ms
-#define brake_light_min_active_period 200  // ms
-#define current_sensor A6
+#define BRAKE_LIGHT 2
+#define BRAKE_LIGHT_LOWER_THRESH 165       // 165/1023 * 3.3V = 0.532V
+#define BRAKE_LIGHT_UPPER_THRESH 510       // /1023 * 3.3V = 0.78V
+#define BRAKE_LIGHT_BRIGHTNESS 150         // 0-255
+#define BRAKE_LIGHT_MIN_ACTIVE_PERIOD 200  // ms
+
+#define BRAKE_SENSOR_PIN A5
+#define CURRENT_SENSOR_PIN A4
+
+#define SENSOR_SAMPLE_PERIOD 20  // ms
+
+#define CAN_BAUD_RATE 500000
+#define CAN_TRANSMISSION_PERIOD 100  // ms
+
+// uncomment these lines to enable debugging
+#define DEBUG_BL
+// #define DEBUG_CAN
 
 uint16_t brake_val = 0;
 
+elapsedMillis canTimer;
 elapsedMillis brake_sensor_timer;
 elapsedMillis brake_light_active_timer;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
 CAN_message_t brake_sensor_c3;
+
+bool R2D = false;
 
 int avgBuffer1[AVG_SAMPLES] = {0};
 
@@ -32,76 +44,83 @@ int average(int* buffer, int n) {
     return sum / n;
 }
 
-void buffer_insert(int* buffer, int n, int value) {
+void bufferInsert(int* buffer, int n, int value) {
     for (int i = 0; i < n - 1; i++) {
         buffer[i] = buffer[i + 1];
     }
     buffer[n - 1] = value;
 }
 
-void init_message() {
+void initMessages() {
     brake_sensor_c3.id = 0x123;
     brake_sensor_c3.len = 3;
     brake_sensor_c3.buf[0] = 0x90;
 }
 
-void canbus_listener(const CAN_message_t& msg) {
+void canbusSniffer(const CAN_message_t& msg) {
     Serial.println("CAN message received");
     Serial.print("Message ID: ");
     Serial.println(msg.id, HEX);
 }
 
-void canbus_setup() {
+void canbusSetup() {
     can1.begin();
     can1.setBaudRate(500000);
     can1.enableFIFO();
     can1.enableFIFOInterrupt();
     can1.setFIFOFilter(REJECT_ALL);
-    can1.setFIFOFilter(0, 0x123, STD);
-    can1.onReceive(canbus_listener);
-
-    init_message();
+    can1.setFIFOFilter(0, 0x111, STD);
+#ifdef DEBUG_CAN
+    can1.onReceive(canbusSniffer);
+#endif
+    initMessages();
 }
 
-void send_msg(uint16_t brake_value) {
-    uint8_t byte1 = (brake_value >> 8) & 0xFF;  // MSB
-    uint8_t byte2 = brake_value & 0xFF;         // LSB
-
-    brake_sensor_c3.buf[1] = byte2;
-    brake_sensor_c3.buf[2] = byte1;
+void sendMsg(uint16_t brake_value) {
+    brake_sensor_c3.buf[2] = (brake_value >> 8) & 0xFF;  // MSBn
+    brake_sensor_c3.buf[1] = brake_value & 0xFF;         // LSB
 
     can1.write(brake_sensor_c3);
 }
 
-void brake_light_control(int brake_val) {
-    if (brake_val >= brake_sensor_ref) {
+bool brakeLightControl(int brake_val) {
+    if (brake_val >= BRAKE_LIGHT_LOWER_THRESH and brake_val <= BRAKE_LIGHT_UPPER_THRESH) {
         brake_light_active_timer = 0;
-        analogWrite(brake_light, brake_light_brightness);
-    } else if (brake_light_active_timer > brake_light_min_active_period) {
-        analogWrite(brake_light, 0);
+        analogWrite(BRAKE_LIGHT, BRAKE_LIGHT_BRIGHTNESS);
+        return true;
+    } else if (brake_light_active_timer > BRAKE_LIGHT_MIN_ACTIVE_PERIOD) {
+        analogWrite(BRAKE_LIGHT, 0);
+        return false;
     }
+    return false;
 }
 
 void setup() {
-    canbus_setup();
-    pinMode(brake_sensor, INPUT);
-    pinMode(brake_light, OUTPUT);
+    canbusSetup();
+    pinMode(BRAKE_SENSOR_PIN, INPUT);
+    pinMode(BRAKE_LIGHT, OUTPUT);
 }
 
 void loop() {
-    // delay(200);
-
-    if (brake_sensor_timer > brake_sensor_read_period) {
+    if (brake_sensor_timer > SENSOR_SAMPLE_PERIOD) {
         brake_sensor_timer = 0;
-        brake_val = analogRead(brake_sensor);
-        buffer_insert(avgBuffer1, AVG_SAMPLES, brake_val);
+        brake_val = analogRead(BRAKE_SENSOR_PIN);
+        bufferInsert(avgBuffer1, AVG_SAMPLES, brake_val);
         brake_val = average(avgBuffer1, AVG_SAMPLES);
+#ifdef DEBUG_BL
         Serial.println(brake_val);
-
-        brake_light_control(brake_val);
-        if (brake_val >= brake_sensor_ref) {
+#endif
+        if (brakeLightControl(brake_val)) {
+#ifdef DEBUG_BL
             Serial.println("Brake Light ON");
-            send_msg(brake_val);
+#endif
+            if (canTimer > CAN_TRANSMISSION_PERIOD) {
+#ifdef DEBUG_CAN
+                Serial.println("Message sent");
+#endif
+                sendMsg(brake_val);
+                canTimer = 0;
+            }
         }
     }
 }
