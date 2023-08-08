@@ -152,11 +152,7 @@ class Logging {
   int motorTemp;
   int powerStageTemp;
   int ACCurrent;
-  
-  SdFat sd;
 
-
-  int t = 0;
 };
 
 #endif
