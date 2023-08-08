@@ -1,6 +1,22 @@
 #include <Arduino.h>
 #include <FlexCAN_T4.h>
 #include <elapsedMillis.h>
+#include "logging.h"
+
+#define REGID_MOUT 0xA0
+#define REGID_IGBT 0x4A
+#define REGID_NACT 0xA8
+#define REGID_VOUT 0x8A
+#define REGID_T_PEAK 0xF0
+#define REGID_CMD_IQ 0x26
+#define REGID_I_CON_EFF 0xC5
+#define REGID_ACTUAL_IQ 0x27
+#define REGID_I_MAX_PEAK 0xC4
+#define REGID_AC_CURRENT 0x20
+#define REGID_MOTOR_TEMP 0x49
+#define REGID_I_LIM_INUSE 0x48
+#define REGID_ACTUAL_SPEED 0x30
+#define REGID_I_ACT_FILTERED 0x5F
 
 #define AVG_SAMPLES 20
 
@@ -28,7 +44,7 @@ elapsedMillis canTimer;
 elapsedMillis brake_sensor_timer;
 elapsedMillis brake_light_active_timer;
 
-FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
+FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2;
 
 CAN_message_t brake_sensor_c3;
 
@@ -57,22 +73,90 @@ void initMessages() {
     brake_sensor_c3.buf[0] = 0x90;
 }
 
-void canbusSniffer(const CAN_message_t& msg) {
-    Serial.println("CAN message received");
-    Serial.print("Message ID: ");
-    Serial.println(msg.id, HEX);
+void canSniffer(const CAN_message_t& msg) {
+    Logging loggingInstance;
+    //Serial.println("CAN message received");
+    //Serial.print("Message ID: ");
+    //Serial.println(msg.id, HEX);
+    if(msg.id == BAMO_RESPONSE_ID){
+    switch (msg.buf[0]) {
+        case REGID_NACT:
+            int tmp = (msg.buf[2] << 8) | msg.buf[1];
+            loggingInstance.set_Nact(tmp);
+            break;
+
+        case REGID_VOUT:
+            loggingInstance.set_Vout((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_ACTUAL_IQ:
+            loggingInstance.set_Iq_actual((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_CMD_IQ:
+            loggingInstance.set_Iq_cmd((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_MOUT:
+            loggingInstance.set_Mout((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_I_LIM_INUSE:
+            loggingInstance.set_I_lim_inuse((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_I_ACT_FILTERED:
+            loggingInstance.set_I_actual_filtered((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_T_PEAK:
+            loggingInstance.set_Tpeak((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_I_MAX_PEAK:
+            loggingInstance.set_Imax_peak((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+
+        case REGID_I_CON_EFF:
+            loggingInstance.set_I_con_eff((msg.buf[2] << 8) | msg.buf[1]);
+            break;
+        
+        case REGID_IGBT:
+            int tmp2 = (msg.buf[2] << 8) | msg.buf[1];
+            tmp2 = (int)(tmp2 / 103.969 - 158.29);
+            loggingInstance.set_powerStageTemp(tmp2);
+            break;
+
+        case REGID_AC_CURRENT:
+            loggingInstance.set_ACCurrent((msg.buf[2] << 8) | msg.buf[1]);
+            //ACCurrent = (ACCurrent * MAX_I) / ADC_MAX;  -> tenho que me relembrar do porquê disto MAX_I = 250; ADC_MAX = 65536
+            break;
+
+        case REGID_MOTOR_TEMP:
+            int tmp3 = (msg.buf[2] << 8) | msg.buf[1];
+            tmp3 = tmp3 * 0.0194 - 160;
+            loggingInstance.set_motorTemp(tmp3);
+            break;
+    }
+    if(msg.id == BMS_ID) {
+        loggingInstance.set_current(((msg.buf[1] << 8) | msg.buf[0]) / 10);
+        loggingInstance.set_soc(msg.buf[2] / 2);
+        loggingInstance.set_packVoltage(((msg.buf[6] << 8) | msg.buf[5]) / 10);
+    }
+
+    }
 }
 
 void canbusSetup() {
-    can1.begin();
-    can1.setBaudRate(500000);
-    can1.enableFIFO();
-    can1.enableFIFOInterrupt();
-    can1.setFIFOFilter(REJECT_ALL);
-    can1.setFIFOFilter(0, 0x111, STD);
-#ifdef DEBUG_CAN
-    can1.onReceive(canbusSniffer);
-#endif
+    can2.begin();
+    can2.setBaudRate(500000);
+    can2.enableFIFO();
+    can2.enableFIFOInterrupt();
+    can2.setFIFOFilter(REJECT_ALL);
+    can2.setFIFOFilter(0, 0x111, STD);
+    can2.setFIFOFilter(1, BMS_ID, STD);
+    can2.setFIFOFilter(2, BAMO_RESPONSE_ID, STD);
+    can2.onReceive(canSniffer);    
     initMessages();
 }
 
@@ -80,7 +164,7 @@ void sendMsg(uint16_t brake_value) {
     brake_sensor_c3.buf[2] = (brake_value >> 8) & 0xFF;  // MSBn
     brake_sensor_c3.buf[1] = brake_value & 0xFF;         // LSB
 
-    can1.write(brake_sensor_c3);
+    can2.write(brake_sensor_c3);
 }
 
 bool brakeLightControl(int brake_val) {
@@ -96,12 +180,20 @@ bool brakeLightControl(int brake_val) {
 }
 
 void setup() {
+    Logging loggingInstance;
+
+    loggingInstance.set_CAN_messages();
     canbusSetup();
+    loggingInstance.setup_log();
     pinMode(BRAKE_SENSOR_PIN, INPUT);
     pinMode(BRAKE_LIGHT, OUTPUT);
+
 }
 
 void loop() {
+    Logging loggingInstance;
+    loggingInstance.write_to_file();
+
     if (brake_sensor_timer > SENSOR_SAMPLE_PERIOD) {
         brake_sensor_timer = 0;
         brake_val = analogRead(BRAKE_SENSOR_PIN);
