@@ -1,7 +1,7 @@
 #include "logging.h"
 
 extern FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2;
-CSVFile csv;
+File myFile;
 
 CAN_message_t Logging::get_Nact_filtered(){
     return Nact_filtered;
@@ -138,12 +138,13 @@ void Logging::set_ACCurrent(int a){
     ACCurrent = a;
 }
 
-void Logging::increment_t() {
-    t++;
-}
-
 
 void Logging::setup_log() {
+
+    //SPI.setCS(PIN_SD_CS);    
+    //SPI.setMISO(PIN_SPI_MISO);
+    //SPI.setMOSI(PIN_SPI_MOSI);
+    //SPI.setSCK(PIN_SPI_SCK);
     // Setup pinout
     pinMode(PIN_SPI_MOSI, OUTPUT);
     pinMode(PIN_SPI_MISO, INPUT);
@@ -152,18 +153,19 @@ void Logging::setup_log() {
     pinMode(PIN_SD_CS, OUTPUT);
     digitalWrite(PIN_SD_CS, HIGH);
 
-    pinMode(PIN_OTHER_DEVICE_CS, OUTPUT);
-    digitalWrite(PIN_OTHER_DEVICE_CS, HIGH);
 
     // Setup serial
     Serial.begin(9600);
 
     // Setup SD card
-    if (!sd.begin(PIN_SD_CS, SD_CARD_SPEED)) {
-        Serial.println("SD card begin error");
+    if (!SD.begin(BUILTIN_SDCARD)) {
+        Serial.println("initialization failed!");
         return;
     }
 
+    Serial.print("Initialization completed");
+
+    
     set_CAN_messages();
 
     can2.write(get_Nact_filtered()); 
@@ -178,6 +180,7 @@ void Logging::setup_log() {
     can2.write(get_I_con_eff_msg());
     can2.write(get_motorTempRequest());
     can2.write(get_powerStageTempRequest());
+    
 }
 
 void Logging::set_CAN_messages() {
@@ -254,16 +257,62 @@ void Logging::set_CAN_messages() {
     motorTempRequest.buf[2] = 0x64;
 }
 
-void Logging::write_to_file() {
+void Logging::write_to_file(int t) {
     
-    if(writeTIMER > 100){
+        Serial.print("Starting to write...");
 
+        myFile = SD.open("logging.txt", FILE_WRITE);
+
+        myFile.println(t);
+
+        myFile.printf("N act filtered - %d \n",Nact);
+
+        myFile.printf("Vout - %d \n",Vout);
+
+        myFile.printf("Iq command - %d \n",Iq_cmd);
+
+        myFile.printf("Iq actual - %d \n",Iq_actual);
+
+        myFile.printf("M out - %d \n",Mout);
+
+        myFile.printf("I lim inuse - %d \n",I_lim_inuse);
+
+        myFile.printf("I actual filtered - %d \n",I_actual_filtered);
+
+        myFile.printf("T-peak - %d \n",Tpeak);
+
+        myFile.printf("I max peak - %d \n",Imax_peak);
+        
+        myFile.printf("I con eff - %d \n",I_con_eff);
+
+        myFile.printf("T-motor - %d \n",motorTemp);
+
+        myFile.printf("T-igbt - %d \n",powerStageTemp);
+
+        myFile.printf("SoC - %d \n",soc);
+
+        myFile.printf("V bat - %d \n",packVoltage);
+
+        myFile.printf("I bat - %d \n",current);
+
+        myFile.close();
+        
+
+        /*
         if (!csv.open("data.csv", O_RDWR | O_CREAT)) {
             Serial.println("Failed open file");
         }
 
-        csv.addField(t);
+        Serial.print("File opened");
 
+        csv.write("Hellow World!");
+
+        Serial.print("Printed into the sd hello world");
+        
+        csv.close();
+        */
+
+        /*
         // N act (filt) - 0xA8
         csv.addField(Nact);
         Serial.printf("N act filtered - %d \n",Nact);
@@ -330,6 +379,5 @@ void Logging::write_to_file() {
         // CSV file shouldn't end by '\n' char.
         increment_t();
         // Don't forget close the file.
-        csv.close();
-    }
+        */
 }

@@ -29,10 +29,14 @@ uint16_t brake_val = 0;
 elapsedMillis canTimer;
 elapsedMillis brake_sensor_timer;
 elapsedMillis brake_light_active_timer;
+elapsedMillis writeTIMER;
+
 
 FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2;
 
 CAN_message_t brake_sensor_c3;
+
+int t = 1;
 
 bool R2D = false;
 
@@ -173,7 +177,6 @@ bool brakeLightControl(int brake_val) {
 void setup() {
     Logging loggingInstance;
 
-    loggingInstance.set_CAN_messages();
     canbusSetup();
     loggingInstance.setup_log();
     pinMode(BRAKE_SENSOR_PIN, INPUT);
@@ -183,7 +186,11 @@ void setup() {
 
 void loop() {
     Logging loggingInstance;
-    loggingInstance.write_to_file();
+    if(writeTIMER > 100) {
+        loggingInstance.write_to_file(t);
+        t++;
+        writeTIMER = 0;
+    }
 
     if (brake_sensor_timer > SENSOR_SAMPLE_PERIOD) {
         brake_sensor_timer = 0;
@@ -206,4 +213,5 @@ void loop() {
             }
         }
     }
+    
 }

@@ -28,14 +28,10 @@ escrever os dados num ficheiro pedidos por VD (Lemos):
 Tenho de perguntar ao Lemos se é a corrente do BAMO ou a do BMS que eles querem
 */
 
-#include <SdFat.h>
+#include <SD.h>
 #include <FlexCAN_T4.h>
-#include <CSVFile.h>
+#include <SPI.h>
 
-
-#define PIN_SD_CS 44                  //! Não sei se está certo, coloquei para remover os erros de compilação
-#define SD_CARD_SPEED SD_SCK_MHZ(50)
-// SPI pinout
 #define PIN_SPI_CLK 45
 #define PIN_SPI_MOSI 43
 #define PIN_SPI_MISO 42
@@ -73,7 +69,7 @@ class Logging {
  public:
   
   void set_CAN_messages(); //sets all the messages in the private field
-  void write_to_file();
+  void write_to_file(int t);
   void setup_log();
 
   CAN_message_t get_Nact_filtered();
@@ -123,7 +119,6 @@ class Logging {
   void set_powerStageTemp(int a);
   void set_ACCurrent(int a);
 
-  void increment_t();
  
  private:
   
@@ -157,9 +152,8 @@ class Logging {
   int motorTemp;
   int powerStageTemp;
   int ACCurrent;
-
+  
   SdFat sd;
-  elapsedMillis writeTIMER;
 
 
   int t = 0;
