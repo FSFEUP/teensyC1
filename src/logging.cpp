@@ -1,6 +1,6 @@
 #include "logging.h"
 
-FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2;
+extern FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2;
 CSVFile csv;
 
 CAN_message_t Logging::get_Nact_filtered(){

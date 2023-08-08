@@ -3,20 +3,6 @@
 #include <elapsedMillis.h>
 #include "logging.h"
 
-#define REGID_MOUT 0xA0
-#define REGID_IGBT 0x4A
-#define REGID_NACT 0xA8
-#define REGID_VOUT 0x8A
-#define REGID_T_PEAK 0xF0
-#define REGID_CMD_IQ 0x26
-#define REGID_I_CON_EFF 0xC5
-#define REGID_ACTUAL_IQ 0x27
-#define REGID_I_MAX_PEAK 0xC4
-#define REGID_AC_CURRENT 0x20
-#define REGID_MOTOR_TEMP 0x49
-#define REGID_I_LIM_INUSE 0x48
-#define REGID_ACTUAL_SPEED 0x30
-#define REGID_I_ACT_FILTERED 0x5F
 
 #define AVG_SAMPLES 20
 
@@ -75,75 +61,80 @@ void initMessages() {
 
 void canSniffer(const CAN_message_t& msg) {
     Logging loggingInstance;
+    int tmp = 0;
+    int tmp2 = 0;
+    int tmp3 = 0;
     //Serial.println("CAN message received");
     //Serial.print("Message ID: ");
     //Serial.println(msg.id, HEX);
     if(msg.id == BAMO_RESPONSE_ID){
-    switch (msg.buf[0]) {
-        case REGID_NACT:
-            int tmp = (msg.buf[2] << 8) | msg.buf[1];
-            loggingInstance.set_Nact(tmp);
-            break;
+        switch (msg.buf[0]) {
+            case REGID_NACT:
+                tmp = (msg.buf[2] << 8) | msg.buf[1];
+                loggingInstance.set_Nact(tmp);
+                break;
 
-        case REGID_VOUT:
-            loggingInstance.set_Vout((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_VOUT:
+                loggingInstance.set_Vout((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_ACTUAL_IQ:
-            loggingInstance.set_Iq_actual((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_ACTUAL_IQ:
+                loggingInstance.set_Iq_actual((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_CMD_IQ:
-            loggingInstance.set_Iq_cmd((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_CMD_IQ:
+                loggingInstance.set_Iq_cmd((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_MOUT:
-            loggingInstance.set_Mout((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_MOUT:
+                loggingInstance.set_Mout((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_I_LIM_INUSE:
-            loggingInstance.set_I_lim_inuse((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_I_LIM_INUSE:
+                loggingInstance.set_I_lim_inuse((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_I_ACT_FILTERED:
-            loggingInstance.set_I_actual_filtered((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_I_ACT_FILTERED:
+                loggingInstance.set_I_actual_filtered((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_T_PEAK:
-            loggingInstance.set_Tpeak((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_T_PEAK:
+                loggingInstance.set_Tpeak((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_I_MAX_PEAK:
-            loggingInstance.set_Imax_peak((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_I_MAX_PEAK:
+                loggingInstance.set_Imax_peak((msg.buf[2] << 8) | msg.buf[1]);
+                break;
 
-        case REGID_I_CON_EFF:
-            loggingInstance.set_I_con_eff((msg.buf[2] << 8) | msg.buf[1]);
-            break;
+            case REGID_I_CON_EFF:
+                loggingInstance.set_I_con_eff((msg.buf[2] << 8) | msg.buf[1]);
+                break;
         
-        case REGID_IGBT:
-            int tmp2 = (msg.buf[2] << 8) | msg.buf[1];
-            tmp2 = (int)(tmp2 / 103.969 - 158.29);
-            loggingInstance.set_powerStageTemp(tmp2);
-            break;
+            case REGID_IGBT:
+                tmp2 = (msg.buf[2] << 8) | msg.buf[1];
+                tmp2 = (int)(tmp2 / 103.969 - 158.29);
+                loggingInstance.set_powerStageTemp(tmp2);
+                break;
 
-        case REGID_AC_CURRENT:
-            loggingInstance.set_ACCurrent((msg.buf[2] << 8) | msg.buf[1]);
-            //ACCurrent = (ACCurrent * MAX_I) / ADC_MAX;  -> tenho que me relembrar do porquê disto MAX_I = 250; ADC_MAX = 65536
-            break;
+            case REGID_AC_CURRENT:
+                loggingInstance.set_ACCurrent((msg.buf[2] << 8) | msg.buf[1]);
+                //ACCurrent = (ACCurrent * MAX_I) / ADC_MAX;  -> tenho que me relembrar do porquê disto MAX_I = 250; ADC_MAX = 65536
+                break;
 
-        case REGID_MOTOR_TEMP:
-            int tmp3 = (msg.buf[2] << 8) | msg.buf[1];
-            tmp3 = tmp3 * 0.0194 - 160;
-            loggingInstance.set_motorTemp(tmp3);
-            break;
+            case REGID_MOTOR_TEMP:
+                tmp3 = (msg.buf[2] << 8) | msg.buf[1];
+                tmp3 = tmp3 * 0.0194 - 160;
+                loggingInstance.set_motorTemp(tmp3);
+                break;
+
+            default:
+                break;
+        }
     }
     if(msg.id == BMS_ID) {
         loggingInstance.set_current(((msg.buf[1] << 8) | msg.buf[0]) / 10);
         loggingInstance.set_soc(msg.buf[2] / 2);
         loggingInstance.set_packVoltage(((msg.buf[6] << 8) | msg.buf[5]) / 10);
-    }
-
     }
 }
 
