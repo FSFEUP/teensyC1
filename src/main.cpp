@@ -186,7 +186,7 @@ void setup() {
 
 void loop() {
     Logging loggingInstance;
-    if(writeTIMER > 100) {
+    if(writeTIMER > 1000) {
         loggingInstance.write_to_file(t);
         t++;
         writeTIMER = 0;

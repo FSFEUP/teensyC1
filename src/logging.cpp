@@ -261,7 +261,7 @@ void Logging::write_to_file(int t) {
     
         Serial.print("Starting to write...");
 
-        myFile = SD.open("logging.txt", FILE_WRITE);
+        myFile = SD.open("reading_values.txt", FILE_WRITE);
 
         myFile.println(t);
 
