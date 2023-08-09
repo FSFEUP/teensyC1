@@ -136,22 +136,22 @@ class Logging {
   CAN_message_t motorTempRequest;
 
 
-  int soc;
-  int current;
-  int packVoltage;
-  int Nact;
-  int Vout;
-  int Iq_cmd;
-  int Iq_actual;
-  int Mout;
-  int I_lim_inuse;
-  int I_actual_filtered;
-  int Tpeak;
-  int Imax_peak;
-  int I_con_eff;
-  int motorTemp;
-  int powerStageTemp;
-  int ACCurrent;
+  uint16_t soc;
+  uint16_t current;
+  uint16_t packVoltage;
+  uint16_t Nact;
+  uint16_t Vout;
+  uint16_t Iq_cmd;
+  uint16_t Iq_actual;
+  uint16_t Mout;
+  uint16_t I_lim_inuse;
+  uint16_t I_actual_filtered;
+  uint16_t Tpeak;
+  uint16_t Imax_peak;
+  uint16_t I_con_eff;
+  uint16_t motorTemp;
+  uint16_t powerStageTemp;
+  uint16_t ACCurrent;
 
 };
 

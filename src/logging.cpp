@@ -40,52 +40,52 @@ CAN_message_t Logging::get_motorTempRequest(){
     return motorTempRequest;
 }
 
-int Logging::get_soc(){
+uint16_t Logging::get_soc(){
     return soc;
 }
-int Logging::get_current(){
+uint16_t Logging::get_current(){
     return current;
 }
-int Logging::get_packVoltage(){
+uint16_t Logging::get_packVoltage(){
     return packVoltage;
 }
-int Logging::get_Nact(){
+uint16_t Logging::get_Nact(){
     return Nact;
 }
-int Logging::get_Vout(){
+uint16_t Logging::get_Vout(){
     return Vout;
 }
-int Logging::get_Iq_cmd(){
+uint16_t Logging::get_Iq_cmd(){
     return Iq_cmd;
 }
-int Logging::get_Iq_actual(){
+uint16_t Logging::get_Iq_actual(){
     return Iq_actual;
 }
-int Logging::get_Mout(){
+uint16_t Logging::get_Mout(){
     return Mout;
 }
-int Logging::get_I_lim_inuse(){
+uint16_t Logging::get_I_lim_inuse(){
     return I_lim_inuse;
 }
-int Logging::get_I_actual_filtered(){
+uint16_t Logging::get_I_actual_filtered(){
     return I_actual_filtered;
 }
-int Logging::get_Tpeak(){
+uint16_t Logging::get_Tpeak(){
     return Tpeak;
 }
-int Logging::get_Imax_peak(){
+uint16_t Logging::get_Imax_peak(){
     return Imax_peak;
 }
-int Logging::get_I_con_eff(){
+uint16_t Logging::get_I_con_eff(){
     return I_con_eff;
 }
-int Logging::get_motorTemp(){
+uint16_t Logging::get_motorTemp(){
     return motorTemp;
 }
-int Logging::get_powerStageTemp(){
+uint16_t Logging::get_powerStageTemp(){
     return powerStageTemp;
 }
-int Logging::get_ACCurrent(){
+uint16_t Logging::get_ACCurrent(){
     return ACCurrent;
 }
 
@@ -168,18 +168,18 @@ void Logging::setup_log() {
     
     set_CAN_messages();
 
-    can2.write(get_Nact_filtered()); 
-    can2.write(get_Vout_msg());
-    can2.write(get_Iq_cmd_msg());
-    can2.write(get_Iq_actual_msg());
-    can2.write(get_Mout_msg());
-    can2.write(get_I_lim_inuse_msg());
-    can2.write(get_I_actual_filtered_msg());
-    can2.write(get_Tpeak_msg());
-    can2.write(get_Imax_peak_msg());
-    can2.write(get_I_con_eff_msg());
-    can2.write(get_motorTempRequest());
-    can2.write(get_powerStageTempRequest());
+    can2.write(Nact_filtered); 
+    can2.write(Vout_msg);
+    can2.write(Iq_cmd_msg);
+    can2.write(Iq_actual_msg);
+    can2.write(Mout_msg);
+    can2.write(I_lim_inuse_msg);
+    can2.write(I_actual_filtered_msg);
+    can2.write(Tpeak_msg);
+    can2.write(Imax_peak_msg);
+    can2.write(I_con_eff_msg);
+    can2.write(motorTempRequest);
+    can2.write(powerStageTempRequest);
     
 }
 
