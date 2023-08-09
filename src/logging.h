@@ -85,22 +85,22 @@ class Logging {
   CAN_message_t get_powerStageTempRequest();
   CAN_message_t get_motorTempRequest();
 
-  int get_soc();
-  int get_current();
-  int get_packVoltage();
-  int get_Nact();
-  int get_Vout();
-  int get_Iq_cmd();
-  int get_Iq_actual();
-  int get_Mout();
-  int get_I_lim_inuse();
-  int get_I_actual_filtered();
-  int get_Tpeak();
-  int get_Imax_peak();
-  int get_I_con_eff();
-  int get_motorTemp();
-  int get_powerStageTemp();
-  int get_ACCurrent();
+  uint16_t get_soc();
+  uint16_t get_current();
+  uint16_t get_packVoltage();
+  uint16_t get_Nact();
+  uint16_t get_Vout();
+  uint16_t get_Iq_cmd();
+  uint16_t get_Iq_actual();
+  uint16_t get_Mout();
+  uint16_t get_I_lim_inuse();
+  uint16_t get_I_actual_filtered();
+  uint16_t get_Tpeak();
+  uint16_t get_Imax_peak();
+  uint16_t get_I_con_eff();
+  uint16_t get_motorTemp();
+  uint16_t get_powerStageTemp();
+  uint16_t get_ACCurrent();
 
   void set_soc(int a);
   void set_current(int a);

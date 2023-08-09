@@ -143,15 +143,15 @@ void canSniffer(const CAN_message_t& msg) {
 }
 
 void canbusSetup() {
-    can2.begin();
-    can2.setBaudRate(500000);
-    can2.enableFIFO();
-    can2.enableFIFOInterrupt();
-    can2.setFIFOFilter(REJECT_ALL);
-    can2.setFIFOFilter(0, 0x111, STD);
-    can2.setFIFOFilter(1, BMS_ID, STD);
-    can2.setFIFOFilter(2, BAMO_RESPONSE_ID, STD);
-    can2.onReceive(canSniffer);    
+    can1.begin();
+    can1.setBaudRate(500000);
+    can1.enableFIFO();
+    can1.enableFIFOInterrupt();
+    can1.setFIFOFilter(REJECT_ALL);
+    can1.setFIFOFilter(0, 0x111, STD);
+    can1.setFIFOFilter(1, BMS_ID, STD);
+    can1.setFIFOFilter(2, BAMO_RESPONSE_ID, STD);
+    can1.onReceive(canSniffer);    
     initMessages();
 }
 
@@ -159,7 +159,7 @@ void sendMsg(uint16_t brake_value) {
     brake_sensor_c3.buf[2] = (brake_value >> 8) & 0xFF;  // MSBn
     brake_sensor_c3.buf[1] = brake_value & 0xFF;         // LSB
 
-    can2.write(brake_sensor_c3);
+    can1.write(brake_sensor_c3);
 }
 
 bool brakeLightControl(int brake_val) {

@@ -1,6 +1,6 @@
 #include "logging.h"
 
-extern FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2;
+extern FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 File myFile;
 
 CAN_message_t Logging::get_Nact_filtered(){
@@ -163,23 +163,23 @@ void Logging::setup_log() {
         return;
     }
 
-    Serial.print("Initialization completed");
+    //Serial.print("Initialization completed");
 
     
     set_CAN_messages();
 
-    can2.write(Nact_filtered); 
-    can2.write(Vout_msg);
-    can2.write(Iq_cmd_msg);
-    can2.write(Iq_actual_msg);
-    can2.write(Mout_msg);
-    can2.write(I_lim_inuse_msg);
-    can2.write(I_actual_filtered_msg);
-    can2.write(Tpeak_msg);
-    can2.write(Imax_peak_msg);
-    can2.write(I_con_eff_msg);
-    can2.write(motorTempRequest);
-    can2.write(powerStageTempRequest);
+    can1.write(Nact_filtered); 
+    can1.write(Vout_msg);
+    can1.write(Iq_cmd_msg);
+    can1.write(Iq_actual_msg);
+    can1.write(Mout_msg);
+    can1.write(I_lim_inuse_msg);
+    can1.write(I_actual_filtered_msg);
+    can1.write(Tpeak_msg);
+    can1.write(Imax_peak_msg);
+    can1.write(I_con_eff_msg);
+    can1.write(motorTempRequest);
+    can1.write(powerStageTempRequest);
     
 }
 
@@ -259,9 +259,9 @@ void Logging::set_CAN_messages() {
 
 void Logging::write_to_file(int t) {
     
-        Serial.print("Starting to write...");
+        //Serial.print("Starting to write...");
 
-        myFile = SD.open("reading_values.txt", FILE_WRITE);
+        myFile = SD.open("Test01.txt", FILE_WRITE);
 
         myFile.println(t);
 
