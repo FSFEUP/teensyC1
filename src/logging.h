@@ -64,6 +64,17 @@ Tenho de perguntar ao Lemos se é a corrente do BAMO ou a do BMS que eles querem
 #define BMS_ID 0x675
 #define BAMO_COMMAND_ID 0x201
 
+struct LogEntry
+{
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    uint32_t millisecond;
+};
+
 class Logging {
 
  public:
