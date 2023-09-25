@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FlexCAN_T4.h>
 #include <elapsedMillis.h>
+#include <logging.h>
 
 #define AVG_SAMPLES 20
 
@@ -18,15 +19,21 @@
 #define CAN_BAUD_RATE 500000
 #define CAN_TRANSMISSION_PERIOD 100  // ms
 
-// uncomment these lines to enable debugging
-#define DEBUG_BL
-// #define DEBUG_CAN
 
 uint16_t brake_val = 0;
 
 elapsedMillis canTimer;
 elapsedMillis brake_sensor_timer;
 elapsedMillis brake_light_active_timer;
+
+int current = 0;
+int voltage = 0;
+int mintmp = 0;
+int maxtmp = 0;
+int avgtmp = 0;
+int apps1 = 0;
+int apps2 = 0;
+int brake = 0;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
@@ -58,9 +65,23 @@ void initMessages() {
 }
 
 void canbusSniffer(const CAN_message_t& msg) {
-    Serial.println("CAN message received");
-    Serial.print("Message ID: ");
-    Serial.println(msg.id, HEX);
+    //Serial.println("CAN message received");
+    //Serial.print("Message ID: ");
+    //Serial.println(msg.id, HEX);
+    switch(msg.id) {
+        case BMS_ID:
+        current = ((msg.buf[1] << 8) | msg.buf[0]) / 10;
+        voltage = ((msg.buf[3] << 8) | msg.buf[2]) / 10;
+        mintmp = msg.buf[4];
+        maxtmp = msg.buf[5];
+        avgtmp = msg.buf[6];
+        break;
+        
+        case 0x111:
+        apps1 = ((msg.buf[1] << 8) | msg.buf[0]);
+        apps2 = ((msg.buf[3] << 8) | msg.buf[2]);
+        break;
+    }
 }
 
 void canbusSetup() {
@@ -70,14 +91,13 @@ void canbusSetup() {
     can1.enableFIFOInterrupt();
     can1.setFIFOFilter(REJECT_ALL);
     can1.setFIFOFilter(0, 0x111, STD);
-#ifdef DEBUG_CAN
+    can1.setFIFOFilter(1, BMS_ID, STD);
     can1.onReceive(canbusSniffer);
-#endif
     initMessages();
 }
 
 void sendMsg(uint16_t brake_value) {
-    brake_sensor_c3.buf[2] = (brake_value >> 8) & 0xFF;  // MSBn
+    brake_sensor_c3.buf[2] = (brake_value >> 8) & 0xFF;  // MSB
     brake_sensor_c3.buf[1] = brake_value & 0xFF;         // LSB
 
     can1.write(brake_sensor_c3);
@@ -107,17 +127,13 @@ void loop() {
         brake_val = analogRead(BRAKE_SENSOR_PIN);
         bufferInsert(avgBuffer1, AVG_SAMPLES, brake_val);
         brake_val = average(avgBuffer1, AVG_SAMPLES);
-#ifdef DEBUG_BL
-        Serial.println(brake_val);
-#endif
+        brake = brake_val;
+        write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+        //Serial.println(brake_val);
         if (brakeLightControl(brake_val)) {
-#ifdef DEBUG_BL
-            Serial.println("Brake Light ON");
-#endif
+            //Serial.println("Brake Light ON");
             if (canTimer > CAN_TRANSMISSION_PERIOD) {
-#ifdef DEBUG_CAN
-                Serial.println("Message sent");
-#endif
+                //Serial.println("Message sent");
                 sendMsg(brake_val);
                 canTimer = 0;
             }
