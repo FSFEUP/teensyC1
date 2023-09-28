@@ -128,7 +128,6 @@ void loop() {
         bufferInsert(avgBuffer1, AVG_SAMPLES, brake_val);
         brake_val = average(avgBuffer1, AVG_SAMPLES);
         brake = brake_val;
-        write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
         //Serial.println(brake_val);
         if (brakeLightControl(brake_val)) {
             //Serial.println("Brake Light ON");
@@ -139,4 +138,6 @@ void loop() {
             }
         }
     }
+    write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+
 }

@@ -3,6 +3,8 @@
 extern FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 File myFile;
 
+LogEntry *entry = 0;
+
 
 constexpr size_t CANBUFSIZE = 100;
 LogEntry lbuf[CANBUFSIZE];
@@ -64,7 +66,7 @@ void setup_log() {
         return;
     }
 
-    myFile = SD.open("Test01.txt", FILE_WRITE);
+    myFile = SD.open("Test02.txt", FILE_WRITE);
     myFile.printf("Current, Voltage, MinTmp, MaxTmp, AvgTmp, Apps1, Apps2, Brake \n");
     myFile.close();
 
@@ -74,17 +76,24 @@ void setup_log() {
 
 void write_to_file(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake) {
     
-        //Serial.print("Starting to write...");
+        myFile = SD.open("Test02.txt", FILE_WRITE);
 
-        myFile = SD.open("Test01.txt", FILE_WRITE);
+        Serial.print("Starting to write...");
+
 
         //myFile.println(t);
 
-        LogEntry *entry;
-        getTimeStamp(entry);
+        //getTimeStamp(entry);
 
-        myFile.printf("%d-%02d-%02d %02d:%02d:%02d.%03u -> ", entry->year, entry->month, entry->day, entry->hour, entry->minute, entry->second, entry->millisecond);
-        myFile.printf("%d, %d, %d, %d, %d, %d, %d, %d \n", current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+        //myFile.printf("%d-%02d-%02d %02d:%02d:%02d.%03u -> ", entry->year, entry->month, entry->day, entry->hour, entry->minute, entry->second, entry->millisecond);
+        
+        myFile.printf("%d, ",voltage);
+        myFile.printf("%d, ", mintmp);
+        myFile.printf("%d, ",maxtmp);
+        myFile.printf("%d,",avgtmp);
+        myFile.printf("%d, ",apps1);
+        myFile.printf("%d, ", apps2);
+        myFile.printf("%d \n", brake);
 
         myFile.close();
         
