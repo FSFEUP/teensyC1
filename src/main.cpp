@@ -25,6 +25,10 @@ uint16_t brake_val = 0;
 elapsedMillis canTimer;
 elapsedMillis brake_sensor_timer;
 elapsedMillis brake_light_active_timer;
+elapsedMillis writeTIMER;
+
+Logging loggingInstance;
+
 
 int current = 0;
 int voltage = 0;
@@ -116,7 +120,10 @@ bool brakeLightControl(int brake_val) {
 }
 
 void setup() {
+    Logging loggingInstance;
+
     canbusSetup();
+    loggingInstance.setup_log();
     pinMode(BRAKE_SENSOR_PIN, INPUT);
     pinMode(BRAKE_LIGHT, OUTPUT);
 }
@@ -138,6 +145,9 @@ void loop() {
             }
         }
     }
-    write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+    if(writeTIMER > 20) {
+        loggingInstance.write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+        writeTIMER = 0;
+    }
 
 }

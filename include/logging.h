@@ -3,15 +3,29 @@
 
 /*
 Esta classe vai ter uma ou mais funções que se vão responsabilizar em
-escrever os dados num ficheiro pedidos por VD:
+escrever os dados num ficheiro pedidos por VD (Lemos):
   BMS:
-    current
-    voltage
-    cell temps
+  int soc -> state of charge;
+  int current -> current;
+  int packVoltage -> pack voltage;
   
-  Sensores:
-    Acelerador
-    Travão
+  BAMOCAR:
+  int Nact -> Actual speed value filtered;
+  int Vout -> Output-voltage usage;
+  int Iq_cmd -> command current;
+  int Iq_actual -> Q-current actual;
+  int Mout -> Digital Torque Intern;
+  int I_lim_inuse -> actual current limit;
+  int I_actual_filtered -> Filtered actual current;
+  int Tpeak -> Timing for peak current;
+  int Imax_peak -> Limit for peak current;
+  int I_con_eff -> Limit for continius current;
+  int motorTemp -> motor temperature;
+  int powerStageTemp -> power stage temperature;
+  int ACCurrent -> current actual value;
+
+
+Tenho de perguntar ao Lemos se é a corrente do BAMO ou a do BMS que eles querem
 */
 
 #include <SD.h>
@@ -43,8 +57,16 @@ struct LogEntry
     int second;
     uint32_t millisecond;
 };
+
+class Logging {
+
+ public:
   
-void write_to_file(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake);
-void setup_log();
+  void write_to_file(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake);
+  void setup_log();
+ 
+ private:
+
+};
 
 #endif
