@@ -1,33 +1,6 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-/*
-Esta classe vai ter uma ou mais funções que se vão responsabilizar em
-escrever os dados num ficheiro pedidos por VD (Lemos):
-  BMS:
-  int soc -> state of charge;
-  int current -> current;
-  int packVoltage -> pack voltage;
-  
-  BAMOCAR:
-  int Nact -> Actual speed value filtered;
-  int Vout -> Output-voltage usage;
-  int Iq_cmd -> command current;
-  int Iq_actual -> Q-current actual;
-  int Mout -> Digital Torque Intern;
-  int I_lim_inuse -> actual current limit;
-  int I_actual_filtered -> Filtered actual current;
-  int Tpeak -> Timing for peak current;
-  int Imax_peak -> Limit for peak current;
-  int I_con_eff -> Limit for continius current;
-  int motorTemp -> motor temperature;
-  int powerStageTemp -> power stage temperature;
-  int ACCurrent -> current actual value;
-
-
-Tenho de perguntar ao Lemos se é a corrente do BAMO ou a do BMS que eles querem
-*/
-
 #include <SD.h>
 #include <FlexCAN_T4.h>
 #include <SPI.h>
@@ -47,6 +20,9 @@ Tenho de perguntar ao Lemos se é a corrente do BAMO ou a do BMS que eles querem
 
 #define BMS_ID 0x666
 
+#define LOGGING_PERIOD 100
+
+
 struct LogEntry
 {
     int year;
@@ -57,6 +33,7 @@ struct LogEntry
     int second;
     uint32_t millisecond;
 };
+
 
 class Logging {
 

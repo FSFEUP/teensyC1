@@ -19,6 +19,8 @@
 #define CAN_BAUD_RATE 500000
 #define CAN_TRANSMISSION_PERIOD 100  // ms
 
+#define LOGGING_PERIOD 100
+
 
 uint16_t brake_val = 0;
 
@@ -145,7 +147,7 @@ void loop() {
             }
         }
     }
-    if(writeTIMER > 20) {
+    if(writeTIMER > LOGGING_PERIOD) {
         loggingInstance.write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
         writeTIMER = 0;
     }
