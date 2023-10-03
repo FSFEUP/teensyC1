@@ -149,6 +149,7 @@ void loop() {
     }
     if(writeTIMER > LOGGING_PERIOD) {
         loggingInstance.write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+        current = 0; voltage = 0; mintmp = 0; maxtmp = 0; avgtmp = 0; apps1 = 0; apps2 = 0; brake = 0;
         writeTIMER = 0;
     }
 

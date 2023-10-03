@@ -3,6 +3,7 @@
 #include <string>
 
 extern FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
+File myFile_setup;
 File myFile;
 
 
@@ -13,7 +14,7 @@ volatile unsigned int lbuf_tail = 0;
 int t = 0;
 
 LogEntry* entry;
-char file[12] = "Test1.txt";
+char file[12] = "Test1.csv";
 int count = 2;
 
 void getTimeStamp(LogEntry* logEntry)
@@ -71,10 +72,15 @@ void Logging::setup_log() {
         Serial.println("initialization failed!");
         return;
     }
+
     while(SD.exists(file)) {
-        snprintf(file, sizeof(file), "Test%d.txt", count);
+        snprintf(file, sizeof(file), "Test%d.csv", count);
         count++;
     }
+    
+    myFile_setup = SD.open(file, FILE_WRITE);
+    myFile_setup.printf("TimeStamp, Current, Voltage, MinTmp, MaxTmp, AvgTmp, APPS1, APPS2, Brake \n");
+    myFile_setup.close();
 
 }
 void Logging::write_to_file(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake) {
@@ -87,23 +93,24 @@ void Logging::write_to_file(int current, int voltage, int mintmp, int maxtmp, in
 
         //myFile.printf("%d-%02d-%02d %02d:%02d:%02d.%03u \n", entry->year, entry->month, entry->day, entry->hour, entry->minute, entry->second, entry->millisecond);
 
-        myFile.printf("%d \n", t);
-
-        myFile.printf("Current - %d \n",current);
-
-        myFile.printf("Voltage - %d \n",voltage);
-
-        myFile.printf("MinTmp - %d \n",mintmp);
-
-        myFile.printf("MaxTmp - %d \n",maxtmp);
-
-        myFile.printf("AvgTmp - %d \n",avgtmp);
-
-        myFile.printf("Apps1 - %d \n",apps1);
         
-        myFile.printf("Apps2 - %d \n",apps2);
+        myFile.printf("%d, ", t);
 
-        myFile.printf("Brake - %d \n",brake);
+        myFile.printf("%d, ",current);
+
+        myFile.printf("%d, ",voltage);
+
+        myFile.printf("%d, ",mintmp);
+
+        myFile.printf("%d, ",maxtmp);
+
+        myFile.printf("%d, ",avgtmp);
+
+        myFile.printf("%d, ",apps1);
+        
+        myFile.printf("%d, ",apps2);
+
+        myFile.printf("%d \n",brake);
 
         t+=LOGGING_PERIOD;
 
