@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 
+LogEntry globalLogEntry;
+LogEntry *entry = &globalLogEntry;
+
 extern FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 File myFile_setup;
 File myFile;
@@ -13,7 +16,6 @@ volatile unsigned int lbuf_head = 0;
 volatile unsigned int lbuf_tail = 0;
 int t = 0;
 
-LogEntry* entry;
 char file[12] = "Test1.csv";
 int count = 2;
 

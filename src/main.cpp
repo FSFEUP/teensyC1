@@ -44,6 +44,7 @@ int brake = 0;
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
 CAN_message_t brake_sensor_c3;
+CAN_message_t current_controll;
 
 bool R2D = false;
 
@@ -65,6 +66,9 @@ void bufferInsert(int* buffer, int n, int value) {
 }
 
 void initMessages() {
+    current_controll.id = 0x201;
+    current_controll.len = 3;
+    current_controll.buf[0] = 0xfb;
     brake_sensor_c3.id = 0x123;
     brake_sensor_c3.len = 3;
     brake_sensor_c3.buf[0] = 0x90;
@@ -76,11 +80,11 @@ void canbusSniffer(const CAN_message_t& msg) {
     //Serial.println(msg.id, HEX);
     switch(msg.id) {
         case BMS_ID:
-        current = ((msg.buf[1] << 8) | msg.buf[0]) / 10;
-        voltage = ((msg.buf[3] << 8) | msg.buf[2]) / 10;
-        mintmp = msg.buf[4];
-        maxtmp = msg.buf[5];
-        avgtmp = msg.buf[6];
+        current = ((msg.buf[0] << 8) | msg.buf[1]) / 10;
+        voltage = ((msg.buf[5] << 8) | msg.buf[6]) / 10;
+        mintmp = msg.buf[2];
+        maxtmp = msg.buf[3];
+        avgtmp = msg.buf[4];
         break;
         
         case 0x111:
