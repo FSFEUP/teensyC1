@@ -7,6 +7,7 @@ LogEntry *entry = &globalLogEntry;
 
 extern FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 File myFile_setup;
+File myFile2_setup;
 File myFile;
 
 
@@ -16,7 +17,9 @@ volatile unsigned int lbuf_head = 0;
 volatile unsigned int lbuf_tail = 0;
 int t = 0;
 
-char file[12] = "Test1.csv";
+char file_VD[16] = "VD_Test1.csv";
+char file_powertrain[24] = "Powertrain_Test1.csv";
+
 int count = 2;
 
 void getTimeStamp(LogEntry* logEntry)
@@ -75,21 +78,29 @@ void Logging::setup_log() {
         return;
     }
 
-    while(SD.exists(file)) {
-        snprintf(file, sizeof(file), "Test%d.csv", count);
-        count++;
+    while(SD.exists(file_VD)) {
+        snprintf(file_VD, sizeof(file_VD), "VD_Test%d.csv", count);
     }
     
-    myFile_setup = SD.open(file, FILE_WRITE);
+    myFile_setup = SD.open(file_VD, FILE_WRITE);
     myFile_setup.printf("TimeStamp, Current, Voltage, MinTmp, MaxTmp, AvgTmp, APPS1, APPS2, Brake \n");
     myFile_setup.close();
 
+    while(SD.exists(file_powertrain)) {
+        snprintf(file_powertrain, sizeof(file_powertrain), "VD_Test%d.csv", count);
+        count++;
+    }
+    
+    myFile2_setup = SD.open(file_powertrain, FILE_WRITE);
+    myFile2_setup.printf("TimeStamp, RPM, Motor Current, BAMO Temp, Motor Temp \n");
+    myFile2_setup.close();
+
 }
-void Logging::write_to_file(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake) {
+void Logging::write_to_file_VD(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake) {
     
         //Serial.print("Starting to write...");
 
-        myFile = SD.open(file, FILE_WRITE);
+        myFile = SD.open(file_VD, FILE_WRITE);
 
         //getTimeStamp(entry);
 
@@ -114,7 +125,29 @@ void Logging::write_to_file(int current, int voltage, int mintmp, int maxtmp, in
 
         myFile.printf("%d \n",brake);
 
-        t+=LOGGING_PERIOD;
+        myFile.close();
+}
+
+void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTmp) {
+            //Serial.print("Starting to write...");
+
+        myFile = SD.open(file_powertrain, FILE_WRITE);
+
+        //getTimeStamp(entry);
+
+        //myFile.printf("%d-%02d-%02d %02d:%02d:%02d.%03u \n", entry->year, entry->month, entry->day, entry->hour, entry->minute, entry->second, entry->millisecond);
+        
+        myFile.printf("%d, ", t);
+
+        myFile.printf("%d, ",rpm);
+
+        myFile.printf("%d, ",I_actual);
+
+        myFile.printf("%2f, ",powerStageTmp);
+
+        myFile.printf("%2f \n",motorTmp);
 
         myFile.close();
+
+        t+=LOGGING_PERIOD;
 }

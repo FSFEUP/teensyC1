@@ -19,7 +19,7 @@
 #define CAN_BAUD_RATE 500000
 #define CAN_TRANSMISSION_PERIOD 100  // ms
 
-#define LOGGING_PERIOD 100
+#define LOGGING_PERIOD 20
 
 
 uint16_t brake_val = 0;
@@ -40,6 +40,11 @@ int avgtmp = 0;
 int apps1 = 0;
 int apps2 = 0;
 int brake = 0;
+
+int rpm = 0;
+int I_actual = 0;
+float powerStageTemp = 0.0;
+float motorTemp = 0.0;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
@@ -69,6 +74,7 @@ void initMessages() {
     current_controll.id = 0x201;
     current_controll.len = 3;
     current_controll.buf[0] = 0xfb;
+
     brake_sensor_c3.id = 0x123;
     brake_sensor_c3.len = 3;
     brake_sensor_c3.buf[0] = 0x90;
@@ -91,6 +97,26 @@ void canbusSniffer(const CAN_message_t& msg) {
         apps1 = ((msg.buf[1] << 8) | msg.buf[0]);
         apps2 = ((msg.buf[3] << 8) | msg.buf[2]);
         break;
+
+        case 0x181:
+            if(msg.buf[0] == 0xCE) {
+                rpm = (msg.buf[2] << 8) | msg.buf[1];
+                if (rpm < 0)
+                    rpm *= -1;
+                rpm = (rpm * 6500) / 32760;
+            }
+            if(msg.buf[0] == 0x5f) {
+                I_actual = (msg.buf[2] << 8) | msg.buf[1];
+            }
+            if(msg.buf[0] == 0x49) {
+                motorTemp = (msg.buf[2] << 8) | msg.buf[1];
+                motorTemp = motorTemp * 0.0194 - 160;
+            }
+            if(msg.buf[0] == 0x4A) {
+                powerStageTemp = (msg.buf[2] << 8) | msg.buf[1];
+                powerStageTemp = (int)(powerStageTemp / 103.969 - 158.29);
+            }
+            break;
     }
 }
 
@@ -152,8 +178,12 @@ void loop() {
         }
     }
     if(writeTIMER > LOGGING_PERIOD) {
-        loggingInstance.write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
-        current = 0; voltage = 0; mintmp = 0; maxtmp = 0; avgtmp = 0; apps1 = 0; apps2 = 0; brake = 0;
+        loggingInstance.write_to_file_VD(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+        //current = 0; voltage = 0; mintmp = 0; maxtmp = 0; avgtmp = 0; apps1 = 0; apps2 = 0; brake = 0;
+        
+        loggingInstance.write_to_file_powertrain(rpm, I_actual, powerStageTemp, motorTemp);
+        //rpm = 0; I_actual = 0; powerStageTemp = 0; motorTemp = 0;
+        
         writeTIMER = 0;
     }
 
