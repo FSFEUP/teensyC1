@@ -21,6 +21,7 @@ char file_VD[16] = "VD_Test1.csv";
 char file_powertrain[24] = "Powertrain_Test1.csv";
 
 int count = 2;
+int count2 = 2;
 
 void getTimeStamp(LogEntry* logEntry)
 {
@@ -71,7 +72,7 @@ void Logging::setup_log() {
 
     // Setup serial
     Serial.begin(9600);
-
+    
     // Setup SD card
     if (!SD.begin(BUILTIN_SDCARD)) {
         Serial.println("initialization failed!");
@@ -80,6 +81,7 @@ void Logging::setup_log() {
 
     while(SD.exists(file_VD)) {
         snprintf(file_VD, sizeof(file_VD), "VD_Test%d.csv", count);
+        count++;
     }
     
     myFile_setup = SD.open(file_VD, FILE_WRITE);
@@ -87,13 +89,14 @@ void Logging::setup_log() {
     myFile_setup.close();
 
     while(SD.exists(file_powertrain)) {
-        snprintf(file_powertrain, sizeof(file_powertrain), "VD_Test%d.csv", count);
-        count++;
+        snprintf(file_powertrain, sizeof(file_powertrain), "powertrain_Test%d.csv", count2);
+        count2++;
     }
     
     myFile2_setup = SD.open(file_powertrain, FILE_WRITE);
     myFile2_setup.printf("TimeStamp, RPM, Motor Current, BAMO Temp, Motor Temp \n");
     myFile2_setup.close();
+    
 
 }
 void Logging::write_to_file_VD(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake) {

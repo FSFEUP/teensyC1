@@ -19,8 +19,9 @@
 #define SD_CARD_SPEED SPI_FULL_SPEED
 
 #define BMS_ID 0x666
+#define BMS_COMMAND_ID 0x181
 
-#define LOGGING_PERIOD 100
+#define LOGGING_PERIOD 20
 
 
 struct LogEntry
