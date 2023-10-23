@@ -19,7 +19,7 @@
 #define CAN_BAUD_RATE 500000
 #define CAN_TRANSMISSION_PERIOD 100  // ms
 
-#define LOGGING_PERIOD 20
+#define LOGGING_PERIOD 10
 
 
 uint16_t brake_val = 0;
@@ -98,7 +98,7 @@ void canbusSniffer(const CAN_message_t& msg) {
         apps2 = ((msg.buf[3] << 8) | msg.buf[2]);
         break;
 
-        case 0x181:
+        case BAMO_RESPONSE_ID:
             if(msg.buf[0] == 0xCE) {
                 rpm = (msg.buf[2] << 8) | msg.buf[1];
                 if (rpm < 0)
