@@ -20,8 +20,8 @@ int t = 0;
 char file_VD[16] = "VD_Test1.csv";
 char file_powertrain[24] = "Powertrain_Test1.csv";
 
-int count = 2;
-int count2 = 2;
+int count = 1;
+int count2 = 1;
 
 void getTimeStamp(LogEntry* logEntry)
 {
@@ -89,7 +89,7 @@ void Logging::setup_log() {
     myFile_setup.close();
 
     while(SD.exists(file_powertrain)) {
-        snprintf(file_powertrain, sizeof(file_powertrain), "powertrain_Test%d.csv", count2);
+        snprintf(file_powertrain, sizeof(file_powertrain), "Powertrain_Test%d.csv", count2);
         count2++;
     }
     
