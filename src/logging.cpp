@@ -131,7 +131,7 @@ void Logging::write_to_file_VD(int current, int voltage, int mintmp, int maxtmp,
         myFile.close();
 }
 
-void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTmp) {
+void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTmp, int lemos) {
             //Serial.print("Starting to write...");
 
         myFile = SD.open(file_powertrain, FILE_WRITE);
@@ -149,6 +149,8 @@ void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp,
         myFile.printf("%2f, ",powerStageTmp);
 
         myFile.printf("%2f \n",motorTmp);
+
+        myFile.printf("%2f \n", lemos);
 
         myFile.close();
 
