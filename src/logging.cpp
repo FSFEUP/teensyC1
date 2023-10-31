@@ -94,7 +94,7 @@ void Logging::setup_log() {
     }
     
     myFile2_setup = SD.open(file_powertrain, FILE_WRITE);
-    myFile2_setup.printf("TimeStamp, RPM, Motor Current, BAMO Temp, Motor Temp \n");
+    myFile2_setup.printf("TimeStamp, RPM, Motor Current, BAMO Temp, Motor Temp, lemos, CA, CD \n");
     myFile2_setup.close();
     
 
@@ -131,7 +131,7 @@ void Logging::write_to_file_VD(int current, int voltage, int mintmp, int maxtmp,
         myFile.close();
 }
 
-void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTmp, int lemos) {
+void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTmp, int lemos, uint32_t CA, uint32_t CD) {
             //Serial.print("Starting to write...");
 
         myFile = SD.open(file_powertrain, FILE_WRITE);
@@ -148,9 +148,14 @@ void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp,
 
         myFile.printf("%2f, ",powerStageTmp);
 
-        myFile.printf("%2f \n",motorTmp);
+        myFile.printf("%2f, ",motorTmp);
 
-        myFile.printf("%2f \n", lemos);
+        myFile.printf("%02X, ", lemos);
+        
+        myFile.printf("%02X, ", CA);
+
+        myFile.printf("%02X \n", CD);
+
 
         myFile.close();
 
