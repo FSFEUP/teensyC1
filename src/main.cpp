@@ -44,9 +44,11 @@ int brake = 0;
 int speed = 0;
 int rpm_max = 0;
 int I_actual = 0;
-float powerStageTemp = 0.0;
-float motorTemp = 0.0;
+int powerStageTemp = 0;
+int motorTemp = 0;
 int lemos = 0;
+int motorTemp2 = 0;
+int powerStageTemp = 0;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
@@ -103,28 +105,30 @@ void canbusSniffer(const CAN_message_t& msg) {
         case BAMO_RESPONSE_ID:
             if(msg.buf[0] == 0x30) {
                 speed = (msg.buf[2] << 8) | msg.buf[1];
-                if(speed < 0) speed *= -1;
+                //if(speed < 0) speed *= -1;
                 //if (rpm < 0)
                     //rpm *= -1;
                 //rpm = (rpm * 6500) / 32760;
             }
             if(msg.buf[0] == 0xCE) {
                 rpm_max = (msg.buf[2] << 8) | msg.buf[1];
-                speed = rpm_max * (speed/32767);
+                //speed = rpm_max * (speed/32767);
             }            
             if(msg.buf[0] == 0x5f) {
                 I_actual = (msg.buf[2] << 8) | msg.buf[1];
             }
             if(msg.buf[0] == 0x49) {
                 motorTemp = (msg.buf[2] << 8) | msg.buf[1];
+                //motorTemp2 = (msg.buf[1] << 8) | msg.buf[2];
+                //if(motorTemp2 > motorTemp) motorTemp = motorTemp2;
+
                 //motorTemp = motorTemp * 0.0194 - 160;
             }
             if(msg.buf[0] == 0x4A) {
                 powerStageTemp = (msg.buf[2] << 8) | msg.buf[1];
+                //powerStageTemp2 = (msg.buf[1] << 8) | msg.buf[2];
+                //if(powerStageTemp2 > powerStageTemp) powerStageTemp = powerStageTemp2;
                 //powerStageTemp = (int)(powerStageTemp / 103.969 - 158.29);
-            }
-            if(msg.buf[0] == 0xfb) {
-                lemos = (msg.buf[2] << 8) | msg.buf[1];
             }
             break;
     }
@@ -193,7 +197,7 @@ void loop() {
         //current = 0; voltage = 0; mintmp = 0; maxtmp = 0; avgtmp = 0; apps1 = 0; apps2 = 0; brake = 0;
         
         loggingInstance.write_to_file_powertrain(speed, I_actual, powerStageTemp, motorTemp, lemos);
-        speed = 0; I_actual = 0; powerStageTemp = 0; motorTemp = 0;
+        //speed = 0; I_actual = 0; powerStageTemp = 0; motorTemp = 0;
         
         writeTIMER = 0;
     }
