@@ -40,7 +40,7 @@ class Logging {
 
  public:
   void write_to_file_VD(int current, int voltage, int mintmp, int maxtmp, int avgtmp, int apps1, int apps2, int brake);
-  void write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTm, int lemos, uint32_t CA, uint32_t CD);
+  void write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTm, uint8_t* b, uint32_t CA, uint32_t CD);
   void setup_log();
  
  private:

@@ -49,6 +49,7 @@ float motorTemp = 0.0;
 int lemos = 0;
 uint32_t CA = 0;
 uint32_t CD = 0;
+uint8_t buffer_fb[8];
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
@@ -126,7 +127,11 @@ void canbusSniffer(const CAN_message_t& msg) {
                 //powerStageTemp = (int)(powerStageTemp / 103.969 - 158.29);
             }
             if(msg.buf[0] == 0xfb) {
-                lemos = (msg.buf[2] << 8) | msg.buf[1];
+                int j = 0;
+                for(int i = 1; i<msg.len; i++) {
+                    buffer_fb[j] = msg.buf[i];
+                    j++;
+                }
             }
             if(msg.buf[0] == 0xCA) {
                 CA = (msg.buf[2] << 8) | msg.buf[1];
@@ -202,8 +207,8 @@ void loop() {
         loggingInstance.write_to_file_VD(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
         //current = 0; voltage = 0; mintmp = 0; maxtmp = 0; avgtmp = 0; apps1 = 0; apps2 = 0; brake = 0;
         
-        loggingInstance.write_to_file_powertrain(speed, I_actual, powerStageTemp, motorTemp, lemos, CA, CD);
-        speed = 0; I_actual = 0; powerStageTemp = 0; motorTemp = 0; lemos = 0; CA = 0; CD = 0;
+        loggingInstance.write_to_file_powertrain(speed, I_actual, powerStageTemp, motorTemp, buffer_fb, CA, CD);
+        //speed = 0; I_actual = 0; powerStageTemp = 0; motorTemp = 0; lemos = 0; CA = 0; CD = 0;
         
         writeTIMER = 0;
     }

@@ -131,7 +131,7 @@ void Logging::write_to_file_VD(int current, int voltage, int mintmp, int maxtmp,
         myFile.close();
 }
 
-void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTmp, int lemos, uint32_t CA, uint32_t CD) {
+void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp, int motorTmp, uint8_t* b, uint32_t CA, uint32_t CD) {
             //Serial.print("Starting to write...");
 
         myFile = SD.open(file_powertrain, FILE_WRITE);
@@ -140,22 +140,13 @@ void Logging::write_to_file_powertrain(int rpm, int I_actual, int powerStageTmp,
 
         //myFile.printf("%d-%02d-%02d %02d:%02d:%02d.%03u \n", entry->year, entry->month, entry->day, entry->hour, entry->minute, entry->second, entry->millisecond);
         
-        myFile.printf("%d, ", t);
+        myFile.printf("%d \n", I_actual);
 
-        myFile.printf("%d, ",rpm);
+        for(int i = 0; i < 8; i++) {
+            myFile.printf("%02X ", b[i]);
+        }
 
-        myFile.printf("%d, ",I_actual);
-
-        myFile.printf("%2f, ",powerStageTmp);
-
-        myFile.printf("%2f, ",motorTmp);
-
-        myFile.printf("%02X, ", lemos);
-        
-        myFile.printf("%02X, ", CA);
-
-        myFile.printf("%02X \n", CD);
-
+        myFile.printf("\n");
 
         myFile.close();
 
