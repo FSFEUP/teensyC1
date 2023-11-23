@@ -28,6 +28,8 @@ elapsedMillis canTimer;
 elapsedMillis brake_sensor_timer;
 elapsedMillis brake_light_active_timer;
 elapsedMillis writeTIMER;
+elapsedMillis CURRENTtimer;
+
 
 Logging loggingInstance;
 
@@ -55,6 +57,10 @@ FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
 CAN_message_t brake_sensor_c3;
 CAN_message_t current_controll;
+
+int8_t current_byte1; // MSB
+int8_t current_byte2;        // LSB
+CAN_message_t current_msg_lemos;
 
 bool R2D = false;
 
@@ -128,10 +134,6 @@ void canbusSniffer(const CAN_message_t& msg) {
             }
             if(msg.buf[0] == 0xfb) {
                 int j = 0;
-                for(int i = 1; i<msg.len; i++) {
-                    buffer_fb[j] = msg.buf[i];
-                    j++;
-                }
             }
             if(msg.buf[0] == 0xCA) {
                 CA = (msg.buf[2] << 8) | msg.buf[1];
@@ -211,6 +213,28 @@ void loop() {
         //speed = 0; I_actual = 0; powerStageTemp = 0; motorTemp = 0; lemos = 0; CA = 0; CD = 0;
         
         writeTIMER = 0;
+    }
+    if(CURRENTtimer > 8) {
+        CURRENTtimer = 0;
+            
+        current_byte1 = (I_actual >> 8) & 0xFF;  // MSB
+        current_byte2 = I_actual & 0xFF;         // LSB
+
+        current_msg_lemos.id = 0x201;
+        current_msg_lemos.len = 5;
+        current_msg_lemos.buf[0] = 0xfb;
+        current_msg_lemos.buf[1] = current_byte2;
+        current_msg_lemos.buf[2] = current_byte1;
+        current_msg_lemos.buf[3] = 0x00;
+        current_msg_lemos.buf[4] = 0x00;
+
+        int j = 0;
+        for(int i = 1; i<current_msg_lemos.len; i++) {
+            buffer_fb[j] = current_msg_lemos.buf[i];
+            j++;
+        }
+
+        can1.write(current_msg_lemos);
     }
 
 }
