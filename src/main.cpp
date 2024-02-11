@@ -53,6 +53,7 @@ int motorTemp2 = 0;
 int powerStageTemp2 = 0;
 int torque = 0;
 int motor_voltage = 0;
+int battery_voltage = 0;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can1;
 
@@ -144,6 +145,9 @@ void canbusSniffer(const CAN_message_t& msg) {
             if(msg.buf[0] == 0xa0) {
                 torque = (msg.buf[2] << 8) | msg.buf[1];
             }
+            if(msg.buf[0] == 0xeb) {
+                battery_voltage = (msg.buf[2] << 8) | msg.buf[1];
+            }
 
             break;
     }
@@ -208,12 +212,9 @@ void loop() {
         }
     }
     if(writeTIMER > LOGGING_PERIOD) {
-        loggingInstance.write_to_file_VD(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake);
+        loggingInstance.write_to_file(current, voltage, mintmp, maxtmp, avgtmp, apps1, apps2, brake, speed, I_actual, powerStageTemp, motorTemp, torque, motor_voltage, battery_voltage);
         //current = 0; voltage = 0; mintmp = 0; maxtmp = 0; avgtmp = 0; apps1 = 0; apps2 = 0; brake = 0;
-        
-        loggingInstance.write_to_file_powertrain(speed, I_actual, powerStageTemp, motorTemp, torque, motor_voltage);
         //speed = 0; I_actual = 0; powerStageTemp = 0; motorTemp = 0;
-        
         writeTIMER = 0;
     }
     if(CURRENTtimer > 8) {
